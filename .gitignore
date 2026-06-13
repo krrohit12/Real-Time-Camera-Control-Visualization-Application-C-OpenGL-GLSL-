@@ -1,0 +1,14 @@
+# Build output
+build/
+
+# CMake user files
+CMakeUserPresets.json
+
+# ImGui saves window layout here at runtime
+imgui.ini
+
+# Third-party fetched by CMake FetchContent — not needed in repo
+third_party/
+
+# macOS
+.DS_Store
