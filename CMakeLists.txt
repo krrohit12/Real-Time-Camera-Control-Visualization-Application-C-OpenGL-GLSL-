@@ -69,6 +69,7 @@ set(APP_SOURCES
     src/ControlPanel.cpp
     src/SnapshotManager.cpp
     src/RecordingManager.cpp
+    src/MetricsManager.cpp
 )
 
 

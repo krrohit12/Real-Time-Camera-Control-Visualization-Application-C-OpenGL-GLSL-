@@ -5,8 +5,10 @@
 #include "ControlPanel.h"
 #include "SnapshotManager.h"
 #include "RecordingManager.h"
+#include "MetricsManager.h"
 
 #include <GLFW/glfw3.h>
+#include <chrono>
 #include <string>
 
 class Application {
@@ -37,6 +39,7 @@ private:
     ControlPanel     m_controlPanel;
     SnapshotManager  m_snapshot;
     RecordingManager m_recorder;
+    MetricsManager   m_metrics;
 
     int    m_windowW{1280};
     int    m_windowH{720};
@@ -44,4 +47,10 @@ private:
     // Latest RGB frame kept for snapshot / recording
     cv::Mat    m_currentFrame;
     std::mutex m_frameMutex;
+
+    // Render FPS tracking
+    using clock = std::chrono::steady_clock;
+    clock::time_point m_lastFpsTick{clock::now()};
+    int               m_fpsFrameCount{0};
+    double            m_renderFPS{0.0};
 };

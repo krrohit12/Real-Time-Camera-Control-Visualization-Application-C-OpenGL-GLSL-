@@ -1,4 +1,5 @@
 #include "RecordingManager.h"
+#include <chrono>
 #include <iostream>
 
 RecordingManager::RecordingManager() = default;
@@ -116,7 +117,10 @@ void RecordingManager::workerLoop() {
         // VideoWriter expects BGR
         cv::Mat bgr;
         cv::cvtColor(frame, bgr, cv::COLOR_RGB2BGR);
+        auto t0 = std::chrono::steady_clock::now();
         m_writer.write(bgr);
+        m_lastEncodeMs.store(std::chrono::duration<double, std::milli>(
+            std::chrono::steady_clock::now() - t0).count());
         ++m_framesEncoded;
     }
 }

@@ -4,6 +4,7 @@
 #include "ShaderManager.h"
 #include "SnapshotManager.h"
 #include "RecordingManager.h"
+#include "MetricsManager.h"
 #include <string>
 
 // Desired resolution preset
@@ -20,7 +21,8 @@ public:
     void draw(CameraManager&    camera,
               ShaderManager&    shaders,
               SnapshotManager&  snapshots,
-              RecordingManager& recorder);
+              RecordingManager& recorder,
+              MetricsManager&   metrics);
 
     // Shader-effect parameter accessors (set into shaders each frame)
     float brightness()  const { return m_brightness; }
@@ -40,6 +42,7 @@ private:
     void drawEffectsSection  (ShaderManager& shaders);
     void drawSnapshotSection (SnapshotManager& snapshots, const cv::Mat& lastFrame);
     void drawRecordingSection(RecordingManager& recorder, CameraManager& camera);
+    void drawMetricsSection  (MetricsManager& metrics);
 
     // Effect parameters
     float m_brightness{0.0f};

@@ -22,7 +22,8 @@ public:
 
     std::string lastSavedPath() const;
     std::string lastError() const;
-    int         savedCount() const;
+    int         savedCount()  const;
+    double      lastSaveMs()  const { return m_lastSaveMs.load(); }
 
 private:
     void workerLoop();
@@ -42,4 +43,5 @@ private:
     std::string             m_lastSaved;
     std::string             m_lastError;
     std::atomic<int>        m_savedCount{0};
+    std::atomic<double>     m_lastSaveMs{0.0};
 };

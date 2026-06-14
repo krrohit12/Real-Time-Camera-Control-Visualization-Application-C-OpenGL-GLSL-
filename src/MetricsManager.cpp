@@ -5,7 +5,6 @@
 
 MetricsManager::MetricsManager() {
     m_lastRenderTick = clock::now();
-    m_renderFrameStart = clock::now();
 }
 
 MetricsManager::~MetricsManager() {
@@ -16,8 +15,9 @@ void MetricsManager::startLogging(const std::string& logPath) {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_logFile.open(logPath, std::ios::out | std::ios::trunc);
     if (m_logFile.is_open()) {
-        m_logFile << "timestamp_ms,render_fps,capture_hz,upload_ms,draw_ms,"
-                     "queue_depth,dropped_frames,total_captured\n";
+        m_logFile << "timestamp_ms,render_fps,capture_hz,capture_ms,"
+                     "upload_ms,draw_ms,queue_depth,dropped_frames,"
+                     "total_captured,snapshot_save_ms,recording_encode_ms\n";
         m_logging = true;
     }
 }
@@ -43,13 +43,16 @@ void MetricsManager::update(const FrameMetrics& m) {
             clock::now().time_since_epoch()).count();
         m_logFile << nowMs << ","
                   << std::fixed << std::setprecision(2)
-                  << m.renderFPS     << ","
-                  << m.captureRateHz << ","
-                  << m.uploadMs      << ","
-                  << m.drawMs        << ","
-                  << m.queueDepth    << ","
-                  << m.droppedFrames << ","
-                  << m.totalCaptured << "\n";
+                  << m.renderFPS          << ","
+                  << m.captureRateHz      << ","
+                  << m.captureMs          << ","
+                  << m.uploadMs           << ","
+                  << m.drawMs             << ","
+                  << m.queueDepth         << ","
+                  << m.droppedFrames      << ","
+                  << m.totalCaptured      << ","
+                  << m.snapshotSaveMs     << ","
+                  << m.recordingEncodeMs  << "\n";
     }
 }
 
@@ -72,9 +75,8 @@ double MetricsManager::avgDrawMs() const {
     return m_latest.drawMs;
 }
 
-const FrameMetrics& MetricsManager::latest() const {
-    // Caller must not hold lock; returns a copy-safe snapshot via ref
-    // (protected by update's lock — safe for single consumer)
+FrameMetrics MetricsManager::latest() const {
+    std::unique_lock<std::mutex> lock(m_mutex);
     return m_latest;
 }
 

@@ -22,9 +22,10 @@ public:
     // Enqueue a frame — non-blocking, drops if queue is full
     void pushFrame(const cv::Mat& rgbFrame);
 
-    std::string lastSavedPath() const;
-    std::string lastError() const;
-    int         framesEncoded() const;
+    std::string lastSavedPath()   const;
+    std::string lastError()       const;
+    int         framesEncoded()   const;
+    double      lastEncodeMs()    const { return m_lastEncodeMs.load(); }
 
 private:
     void workerLoop();
@@ -46,4 +47,5 @@ private:
     mutable std::mutex      m_resultMutex;
     std::string             m_lastError;
     std::atomic<int>        m_framesEncoded{0};
+    std::atomic<double>     m_lastEncodeMs{0.0};
 };

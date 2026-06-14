@@ -20,7 +20,8 @@ ControlPanel::ControlPanel() = default;
 void ControlPanel::draw(CameraManager&    camera,
                         ShaderManager&    shaders,
                         SnapshotManager&  snapshots,
-                        RecordingManager& recorder)
+                        RecordingManager& recorder,
+                        MetricsManager&   metrics)
 {
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Once);
     ImGui::SetNextWindowSize(ImVec2(320, 0), ImGuiCond_Once);
@@ -34,6 +35,8 @@ void ControlPanel::draw(CameraManager&    camera,
     drawSnapshotSection(snapshots, cv::Mat{});
     ImGui::Separator();
     drawRecordingSection(recorder, camera);
+    ImGui::Separator();
+    drawMetricsSection(metrics);
 
     // Status notification
     if (!m_statusMsg.empty() && nowSec() < m_statusExpiry) {
@@ -177,3 +180,46 @@ void ControlPanel::drawRecordingSection(RecordingManager& recorder,
                            recorder.lastError().c_str());
 }
 
+void ControlPanel::drawMetricsSection(MetricsManager& metrics) {
+    if (!ImGui::CollapsingHeader("Metrics", ImGuiTreeNodeFlags_DefaultOpen))
+        return;
+
+    const FrameMetrics m = metrics.latest();
+
+    ImGui::Text("Render FPS:      %.1f  (avg %.1f)",
+                m.renderFPS, metrics.avgRenderFPS());
+    ImGui::Text("Capture Rate:    %.1f Hz", m.captureRateHz);
+    ImGui::Text("Capture Time:    %.2f ms", m.captureMs);
+    ImGui::Text("Upload Time:     %.2f ms  (avg %.2f)",
+                m.uploadMs, metrics.avgUploadMs());
+    ImGui::Text("Render Time:     %.2f ms  (avg %.2f)",
+                m.drawMs, metrics.avgDrawMs());
+    ImGui::Text("Queue Depth:     %.0f", m.queueDepth);
+    ImGui::Text("Dropped Frames:  %zu", m.droppedFrames);
+    ImGui::Text("Total Captured:  %zu", m.totalCaptured);
+
+    if (m.snapshotSaveMs > 0.0)
+        ImGui::Text("Snapshot Save:   %.1f ms", m.snapshotSaveMs);
+    if (m.recordingEncodeMs > 0.0)
+        ImGui::Text("Encode Time:     %.2f ms", m.recordingEncodeMs);
+
+    ImGui::Spacing();
+
+    static char logPathBuf[256] = "metrics.csv";
+    static bool logging = false;
+
+    if (!logging) {
+        ImGui::InputText("Log file", logPathBuf, sizeof(logPathBuf));
+        if (ImGui::Button("Start Logging")) {
+            metrics.startLogging(logPathBuf);
+            logging = true;
+        }
+    } else {
+        ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f),
+                           "Logging -> %s", logPathBuf);
+        if (ImGui::Button("Stop Logging")) {
+            metrics.stopLogging();
+            logging = false;
+        }
+    }
+}

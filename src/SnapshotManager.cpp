@@ -69,7 +69,11 @@ void SnapshotManager::workerLoop() {
         cv::Mat bgr;
         cv::cvtColor(job.frame, bgr, cv::COLOR_RGB2BGR);
 
-        bool ok = cv::imwrite(job.path, bgr);
+        using clock = std::chrono::steady_clock;
+        auto t0    = clock::now();
+        bool ok    = cv::imwrite(job.path, bgr);
+        m_lastSaveMs.store(
+            std::chrono::duration<double, std::milli>(clock::now() - t0).count());
         if (ok) {
             ++m_savedCount;
             std::unique_lock<std::mutex> r(m_resultMutex);

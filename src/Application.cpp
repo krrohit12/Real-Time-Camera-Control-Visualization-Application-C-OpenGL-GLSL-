@@ -48,6 +48,7 @@ bool Application::init(int windowWidth, int windowHeight,
     }
 
     m_snapshot.start(".");
+    m_lastFpsTick = clock::now();
 
     if (!m_camera.open(0)) {
         std::cerr << "Warning: " << m_camera.lastError()
@@ -160,17 +161,42 @@ void Application::renderFrame() {
         }
     }
 
-    // ── 5. ImGui ─────────────────────────────────────────────────────────────
+    // ── 5. Collect metrics ───────────────────────────────────────────────────
+    ++m_fpsFrameCount;
+    auto now = clock::now();
+    double elapsed = std::chrono::duration<double>(now - m_lastFpsTick).count();
+    if (elapsed >= 1.0) {
+        m_renderFPS      = m_fpsFrameCount / elapsed;
+        m_fpsFrameCount  = 0;
+        m_lastFpsTick    = now;
+    }
+
+    {
+        FrameMetrics fm;
+        fm.renderFPS         = m_renderFPS;
+        fm.captureRateHz     = m_camera.captureRateHz();
+        fm.captureMs         = m_camera.lastCaptureMs();
+        fm.uploadMs          = m_renderer.lastUploadMs();
+        fm.drawMs            = m_renderer.lastDrawMs();
+        fm.queueDepth        = static_cast<double>(m_camera.frameQueue().size());
+        fm.droppedFrames     = m_camera.frameQueue().droppedCount();
+        fm.totalCaptured     = m_camera.totalFramesCaptured();
+        fm.snapshotSaveMs    = m_snapshot.lastSaveMs();
+        fm.recordingEncodeMs = m_recorder.lastEncodeMs();
+        m_metrics.update(fm);
+    }
+
+    // ── 6. ImGui ─────────────────────────────────────────────────────────────
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    m_controlPanel.draw(m_camera, sm, m_snapshot, m_recorder);
+    m_controlPanel.draw(m_camera, sm, m_snapshot, m_recorder, m_metrics);
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    // ── 6. Swap buffers ──────────────────────────────────────────────────────
+    // ── 7. Swap buffers ──────────────────────────────────────────────────────
     glfwSwapBuffers(m_window);
 }
 

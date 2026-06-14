@@ -131,7 +131,10 @@ void CameraManager::captureLoop() {
 
     while (m_running.load()) {
         cv::Mat frame;
+        auto t0 = clock::now();
         bool ok = m_cap.read(frame);
+        m_lastCaptureMs.store(
+            std::chrono::duration<double, std::milli>(clock::now() - t0).count());
 
         if (!ok || frame.empty()) {
             std::unique_lock<std::mutex> lock(m_errorMutex);

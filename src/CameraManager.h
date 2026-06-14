@@ -53,8 +53,9 @@ public:
     void setAutoReconnect(bool enable, int deviceIndex = 0);
 
     // Metrics
-    double captureRateHz() const;
+    double      captureRateHz()       const;
     std::size_t totalFramesCaptured() const;
+    double      lastCaptureMs()       const { return m_lastCaptureMs.load(); }
 
 private:
     void captureLoop();
@@ -76,4 +77,5 @@ private:
 
     std::atomic<std::size_t>    m_frameCount{0};
     std::atomic<double>         m_captureRate{0.0};
+    std::atomic<double>         m_lastCaptureMs{0.0};
 };
