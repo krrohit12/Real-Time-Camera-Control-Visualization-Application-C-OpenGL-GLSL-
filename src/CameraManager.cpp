@@ -77,6 +77,16 @@ bool CameraManager::setFPS(double fps) {
     return std::abs(accepted - fps) < 2.0;
 }
 
+bool CameraManager::setBufferSize(int n) {
+    m_cap.set(cv::CAP_PROP_BUFFERSIZE, n);
+    int accepted = static_cast<int>(m_cap.get(cv::CAP_PROP_BUFFERSIZE));
+    return accepted == n;
+}
+
+int CameraManager::getBufferSize() const {
+    return static_cast<int>(m_cap.get(cv::CAP_PROP_BUFFERSIZE));
+}
+
 int CameraManager::getWidth() const {
     return static_cast<int>(m_cap.get(cv::CAP_PROP_FRAME_WIDTH));
 }

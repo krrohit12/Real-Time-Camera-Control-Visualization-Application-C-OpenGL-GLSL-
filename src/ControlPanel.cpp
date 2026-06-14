@@ -103,6 +103,21 @@ void ControlPanel::drawCameraSection(CameraManager& camera) {
     if (!m_fpsAccepted)
         ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f),
                            "Warning: Camera ignored FPS request");
+
+    // ── Buffer Size (Experiment 2) ────────────────────────────────────────────
+    ImGui::Spacing();
+    ImGui::TextDisabled("-- Buffer Size --");
+    if (ImGui::SliderInt("Buffer Size", &m_bufferSize, 1, 4)) {
+        m_bufferAccepted = camera.setBufferSize(m_bufferSize);
+    }
+    int driverBuf = camera.getBufferSize();
+    if (driverBuf == 0)
+        ImGui::TextDisabled("Driver buffer: N/A (not supported on this backend)");
+    else
+        ImGui::TextDisabled("Driver buffer: %d", driverBuf);
+    if (!m_bufferAccepted)
+        ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f),
+                           "Warning: CAP_PROP_BUFFERSIZE not supported (AVFoundation)");
 }
 
 void ControlPanel::drawEffectsSection(ShaderManager& shaders) {

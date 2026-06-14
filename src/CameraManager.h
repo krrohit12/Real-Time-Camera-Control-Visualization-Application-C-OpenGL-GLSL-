@@ -32,12 +32,14 @@ public:
     void close();
     bool isOpen() const;
 
-    // Resolution / FPS
-    bool setResolution(int width, int height);
-    bool setFPS(double fps);
-    int  getWidth()  const;
-    int  getHeight() const;
-    double getFPS() const;
+    // Resolution / FPS / Buffer
+    bool   setResolution(int width, int height);
+    bool   setFPS(double fps);
+    bool   setBufferSize(int n);
+    int    getWidth()      const;
+    int    getHeight()     const;
+    double getFPS()        const;
+    int    getBufferSize() const;
 
     // Dynamic camera controls
     std::vector<CameraControl>& controls();

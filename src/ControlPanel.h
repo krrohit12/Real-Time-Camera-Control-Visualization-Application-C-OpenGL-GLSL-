@@ -63,4 +63,6 @@ private:
     int   m_resPresetIdx{0};
     float m_fpsValue{30.0f};
     bool  m_fpsAccepted{true};
+    int   m_bufferSize{4};
+    bool  m_bufferAccepted{true};
 };
