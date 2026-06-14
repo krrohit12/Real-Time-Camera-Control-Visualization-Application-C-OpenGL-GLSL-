@@ -9,6 +9,7 @@
 
 #include <GLFW/glfw3.h>
 #include <chrono>
+#include <thread>
 #include <string>
 
 class Application {

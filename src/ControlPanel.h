@@ -65,4 +65,9 @@ private:
     bool  m_fpsAccepted{true};
     int   m_bufferSize{4};
     bool  m_bufferAccepted{true};
+    int   m_queueMaxSize{4};
+    int   m_renderFPSCap{0};
+
+public:
+    int targetRenderFPS() const { return m_renderFPSCap; }
 };

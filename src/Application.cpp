@@ -60,8 +60,17 @@ bool Application::init(int windowWidth, int windowHeight,
 
 void Application::run() {
     while (!glfwWindowShouldClose(m_window)) {
+        auto frameStart = clock::now();
         glfwPollEvents();
         renderFrame();
+
+        int cap = m_controlPanel.targetRenderFPS();
+        if (cap > 0) {
+            auto target  = std::chrono::duration<double>(1.0 / cap);
+            auto elapsed = clock::now() - frameStart;
+            if (elapsed < target)
+                std::this_thread::sleep_for(target - elapsed);
+        }
     }
 }
 

@@ -45,6 +45,21 @@ public:
         return item;
     }
 
+    void setMaxSize(std::size_t n) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_maxSize = n;
+        // drop excess frames already in queue
+        while (m_queue.size() > m_maxSize) {
+            m_queue.pop();
+            ++m_droppedCount;
+        }
+    }
+
+    std::size_t maxSize() const {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        return m_maxSize;
+    }
+
     void stop() {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_stopped = true;

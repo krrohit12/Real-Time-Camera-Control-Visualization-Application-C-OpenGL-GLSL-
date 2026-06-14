@@ -118,6 +118,26 @@ void ControlPanel::drawCameraSection(CameraManager& camera) {
     if (!m_bufferAccepted)
         ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f),
                            "Warning: CAP_PROP_BUFFERSIZE not supported (AVFoundation)");
+
+    // ── Queue Depth (Experiment 3) ────────────────────────────────────────────
+    ImGui::Spacing();
+    ImGui::TextDisabled("-- Queue Depth --");
+    if (ImGui::SliderInt("Queue Max Size", &m_queueMaxSize, 1, 4)) {
+        camera.frameQueue().setMaxSize(static_cast<std::size_t>(m_queueMaxSize));
+        camera.frameQueue().resetDropCount();
+    }
+    ImGui::TextDisabled("Current depth: %zu  |  Max: %zu",
+                        camera.frameQueue().size(),
+                        camera.frameQueue().maxSize());
+
+    // ── Render FPS Cap ────────────────────────────────────────────────────────
+    ImGui::Spacing();
+    ImGui::TextDisabled("-- Render FPS Cap --");
+    ImGui::SliderInt("Render Cap", &m_renderFPSCap, 0, 120);
+    if (m_renderFPSCap == 0)
+        ImGui::TextDisabled("Uncapped");
+    else
+        ImGui::TextDisabled("Capped at %d FPS", m_renderFPSCap);
 }
 
 void ControlPanel::drawEffectsSection(ShaderManager& shaders) {
