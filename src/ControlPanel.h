@@ -62,4 +62,5 @@ private:
     static const ResolutionPreset kResPresets[];
     int   m_resPresetIdx{0};
     float m_fpsValue{30.0f};
+    bool  m_fpsAccepted{true};
 };

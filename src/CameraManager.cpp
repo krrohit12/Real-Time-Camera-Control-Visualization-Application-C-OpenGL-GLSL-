@@ -73,7 +73,8 @@ bool CameraManager::setResolution(int width, int height) {
 
 bool CameraManager::setFPS(double fps) {
     m_cap.set(cv::CAP_PROP_FPS, fps);
-    return true;
+    double accepted = m_cap.get(cv::CAP_PROP_FPS);
+    return std::abs(accepted - fps) < 2.0;
 }
 
 int CameraManager::getWidth() const {

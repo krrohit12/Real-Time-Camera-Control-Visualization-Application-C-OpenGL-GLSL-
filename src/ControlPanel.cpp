@@ -96,8 +96,13 @@ void ControlPanel::drawCameraSection(CameraManager& camera) {
 
     // ── FPS ───────────────────────────────────────────────────────────────────
     if (ImGui::SliderFloat("FPS", &m_fpsValue, 5.0f, 60.0f, "%.0f")) {
-        camera.setFPS(static_cast<double>(m_fpsValue));
+        m_fpsAccepted = camera.setFPS(static_cast<double>(m_fpsValue));
     }
+    ImGui::TextDisabled("Driver: %.0f fps  |  Achieved: %.1f Hz",
+                        camera.getFPS(), camera.captureRateHz());
+    if (!m_fpsAccepted)
+        ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f),
+                           "Warning: Camera ignored FPS request");
 }
 
 void ControlPanel::drawEffectsSection(ShaderManager& shaders) {
