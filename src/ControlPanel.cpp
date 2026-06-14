@@ -203,6 +203,16 @@ void ControlPanel::drawMetricsSection(MetricsManager& metrics) {
     if (m.recordingEncodeMs > 0.0)
         ImGui::Text("Encode Time:     %.2f ms", m.recordingEncodeMs);
 
+    ImGui::Separator();
+
+    // ── Phase 3: Software Pipeline Latency ───────────────────────────────────
+    ImGui::TextColored(ImVec4(0.4f, 0.8f, 1.0f, 1.0f), "Pipeline Latency (Phase 3)");
+    ImGui::Text("Capture Timestamp: %.3f ms", m.captureTimestampMs);
+    ImGui::Text("Render  Timestamp: %.3f ms", m.renderTimestampMs);
+    ImGui::Text("Current Latency:   %.2f ms", m.pipelineLatencyMs);
+    ImGui::Text("Average Latency:   %.2f ms", metrics.avgPipelineLatencyMs());
+    ImGui::TextDisabled("(software only: queue+upload+draw+imgui+swap)");
+
     ImGui::Spacing();
 
     static char logPathBuf[256] = "metrics.csv";

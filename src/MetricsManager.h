@@ -7,6 +7,7 @@
 #include <fstream>
 
 struct FrameMetrics {
+    // Phase 2 — pipeline stage timings
     double captureRateHz{0.0};
     double captureMs{0.0};         // time to read one raw frame from camera
     double renderFPS{0.0};
@@ -17,6 +18,18 @@ struct FrameMetrics {
     double recordingEncodeMs{0.0}; // last VideoWriter::write() duration
     std::size_t droppedFrames{0};
     std::size_t totalCaptured{0};
+
+    // Phase 3 — software pipeline latency
+    // captureTimestampMs : wall-clock ms when cap.read() returned in capture thread
+    // renderTimestampMs  : wall-clock ms just before glfwSwapBuffers()
+    // pipelineLatencyMs  : renderTimestampMs - captureTimestampMs
+    //
+    // This measures software pipeline latency only. It includes:
+    //   queue wait time, texture upload, GLSL draw, ImGui render, swap delay.
+    // It does NOT include camera sensor exposure or display panel response time.
+    double captureTimestampMs{0.0};
+    double renderTimestampMs{0.0};
+    double pipelineLatencyMs{0.0};
 };
 
 class MetricsManager {
@@ -30,9 +43,10 @@ public:
     void update(const FrameMetrics& m);
 
     // Rolling averages (last N samples)
-    double avgRenderFPS()   const;
-    double avgUploadMs()    const;
-    double avgDrawMs()      const;
+    double avgRenderFPS()          const;
+    double avgUploadMs()           const;
+    double avgDrawMs()             const;
+    double avgPipelineLatencyMs()  const;
 
     // Raw latest (returns a copy — safe to call without holding the lock)
     FrameMetrics latest() const;
@@ -48,6 +62,7 @@ private:
     FrameMetrics            m_latest;
     std::deque<float>       m_fpsHistory;
     std::deque<float>       m_uploadHistory;
+    std::deque<float>       m_latencyHistory;
 
     std::ofstream           m_logFile;
     bool                    m_logging{false};

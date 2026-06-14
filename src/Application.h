@@ -53,4 +53,9 @@ private:
     clock::time_point m_lastFpsTick{clock::now()};
     int               m_fpsFrameCount{0};
     double            m_renderFPS{0.0};
+
+    // Phase 3 — pipeline latency tracking
+    double            m_captureTimestampMs{0.0}; // set when frame is dequeued
+    double            m_renderTimestampMs{0.0};  // set just before glfwSwapBuffers
+    double            m_pipelineLatencyMs{0.0};  // render - capture
 };

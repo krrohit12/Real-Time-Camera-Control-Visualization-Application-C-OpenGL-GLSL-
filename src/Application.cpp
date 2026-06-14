@@ -126,6 +126,7 @@ void Application::renderFrame() {
     bool newCameraFrame = false;
     auto optFrame = m_camera.frameQueue().tryPop();
     if (optFrame.has_value()) {
+        m_captureTimestampMs = optFrame->timestampMs; // Phase 3: when frame left camera
         std::unique_lock<std::mutex> lock(m_frameMutex);
         m_currentFrame = std::move(optFrame->data);
         lock.unlock();
@@ -181,8 +182,11 @@ void Application::renderFrame() {
         fm.queueDepth        = static_cast<double>(m_camera.frameQueue().size());
         fm.droppedFrames     = m_camera.frameQueue().droppedCount();
         fm.totalCaptured     = m_camera.totalFramesCaptured();
-        fm.snapshotSaveMs    = m_snapshot.lastSaveMs();
-        fm.recordingEncodeMs = m_recorder.lastEncodeMs();
+        fm.snapshotSaveMs       = m_snapshot.lastSaveMs();
+        fm.recordingEncodeMs    = m_recorder.lastEncodeMs();
+        fm.captureTimestampMs   = m_captureTimestampMs;
+        fm.renderTimestampMs    = m_renderTimestampMs;
+        fm.pipelineLatencyMs    = m_pipelineLatencyMs;
         m_metrics.update(fm);
     }
 
@@ -197,6 +201,14 @@ void Application::renderFrame() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     // ── 7. Swap buffers ──────────────────────────────────────────────────────
+    // Phase 3: capture render timestamp just before swap (frame about to be displayed)
+    m_renderTimestampMs = static_cast<double>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            clock::now().time_since_epoch()).count());
+
+    if (m_captureTimestampMs > 0.0)
+        m_pipelineLatencyMs = m_renderTimestampMs - m_captureTimestampMs;
+
     glfwSwapBuffers(m_window);
 }
 
