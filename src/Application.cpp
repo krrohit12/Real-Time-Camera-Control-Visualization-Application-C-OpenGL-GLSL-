@@ -100,7 +100,7 @@ bool Application::initGLFW(int w, int h, const std::string& title) {
     }
 
     glfwMakeContextCurrent(m_window);
-    glfwSwapInterval(1); // vsync
+    glfwSwapInterval(0); // vsync off
 
     glfwSetWindowUserPointer(m_window, this);
     glfwSetFramebufferSizeCallback(m_window, onFramebufferResize);
@@ -131,9 +131,14 @@ void Application::shutdownImGui() {
 }
 
 void Application::renderFrame() {
-    // ── 1. Pull latest camera frame ──────────────────────────────────────────
+    // ── 1. Pull latest camera frame (drain queue, keep newest) ──────────────
     bool newCameraFrame = false;
-    auto optFrame = m_camera.frameQueue().tryPop();
+    std::optional<CameraFrame> optFrame;
+    {
+        std::optional<CameraFrame> candidate;
+        while ((candidate = m_camera.frameQueue().tryPop()).has_value())
+            optFrame = std::move(candidate);
+    }
     if (optFrame.has_value()) {
         m_captureTimestampMs = optFrame->timestampMs; // Phase 3: when frame left camera
         std::unique_lock<std::mutex> lock(m_frameMutex);
